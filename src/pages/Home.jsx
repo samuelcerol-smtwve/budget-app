@@ -4,6 +4,7 @@ import { useExpenses } from '../hooks/useExpenses';
 import { monthKey } from '../lib/helpers';
 import { supabase } from '../lib/supabase';
 import { DEFAULT_ENVELOPES, INITIAL_SPENT_AMOUNT, INITIAL_SPENT_NOTE } from '../lib/constants';
+import { getIcon } from '../lib/icons';
 
 import Dashboard from '../components/Dashboard';
 import EnvelopeCard from '../components/EnvelopeCard';
@@ -23,7 +24,6 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
   const [envelopesModalOpen, setEnvelopesModalOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Calculs dérivés
   const spentByEnv = useMemo(() => {
     const m = {};
     expenses.forEach((e) => {
@@ -44,7 +44,10 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
     return [...s].sort().reverse();
   }, [expenses]);
 
-  // Handlers
+  // Extract first name from email
+  const userName = user.email?.split('@')[0]?.split('.')[0];
+  const displayName = userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : '';
+
   const handleSaveExpense = async (data) => {
     try {
       if (data.id) {
@@ -62,7 +65,6 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
           spent_at: data.spent_at,
         });
       }
-      // Si la dépense est dans un mois différent du filtre actuel, basculer
       const mk = data.spent_at.slice(0, 7);
       if (mk !== filterMonth) setFilterMonth(mk);
       setExpenseModal({ open: false, expense: null, preselectEnvId: null });
@@ -101,12 +103,11 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
   };
 
   const handleResetAll = async () => {
-    if (!confirm('⚠️ Tout effacer (enveloppes + dépenses) ? Les enveloppes par défaut seront recréées.')) return;
+    if (!confirm('Tout effacer (enveloppes + dépenses) ? Les enveloppes par défaut seront recréées.')) return;
     if (!confirm('Vraiment sûr ? Action irréversible.')) return;
     try {
       await supabase.from('expenses').delete().eq('user_id', user.id);
       await supabase.from('envelopes').delete().eq('user_id', user.id);
-      // Recréer les défauts
       const toInsert = DEFAULT_ENVELOPES.map((e) => ({ ...e, user_id: user.id }));
       const { data: insertedEnvs } = await supabase.from('envelopes').insert(toInsert).select();
       const preloadEnv = insertedEnvs?.find((e) => e.name === 'Déjà dépensé (à ventiler)');
@@ -131,33 +132,24 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
 
   if (loadingEnv || loadingExp) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-500">Chargement...</div>
+      <div className="min-h-screen flex items-center justify-center bg-night-800">
+        <div className="text-secondary">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-4">
+    <div className="max-w-xl mx-auto px-4 pt-4 bg-night-800 min-h-screen">
       {/* Header */}
       <header className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">💰 Mon Budget</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={onToggleDark}
-            className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-lg"
-            aria-label="Thème"
-          >
-            {isDark ? '☀️' : '🌙'}
-          </button>
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-lg"
-            aria-label="Réglages"
-          >
-            ⚙️
-          </button>
-        </div>
+        <div />
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className="w-10 h-10 flex items-center justify-center bg-night-700 rounded-xl border-gold transition-colors hover:bg-night-600"
+          aria-label="Réglages"
+        >
+          {getIcon('settings', { size: 18, color: '#8B95A7' })}
+        </button>
       </header>
 
       {/* Dashboard */}
@@ -166,20 +158,21 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
         totalBudget={totalBudget}
         totalSpent={totalSpent}
         totalRemaining={totalRemaining}
+        userName={displayName}
       />
 
-      {/* Enveloppes */}
+      {/* Envelopes section */}
       <section className="mb-5">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Enveloppes</h2>
+          <h2 className="text-base font-medium text-cream-100">Mes enveloppes</h2>
           <button
             onClick={() => setEnvelopesModalOpen(true)}
-            className="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
+            className="text-sm text-gold font-medium hover:text-gold-light transition-colors"
           >
             Gérer
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="space-y-2.5">
           {envelopes.map((env) => (
             <EnvelopeCard
               key={env.id}
@@ -192,9 +185,18 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
         </div>
       </section>
 
-      {/* Historique */}
-      <section className="mb-5">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">Historique</h2>
+      {/* Add expense button — full width */}
+      <button
+        onClick={() => setExpenseModal({ open: true, expense: null, preselectEnvId: null })}
+        className="w-full py-3.5 bg-gold text-night-800 rounded-xl font-medium flex items-center justify-center gap-2 mb-5 active:scale-[0.98] transition-transform"
+      >
+        {getIcon('plus', { size: 18, color: '#1A2332', strokeWidth: 2.5 })}
+        Ajouter une dépense
+      </button>
+
+      {/* History */}
+      <section className="mb-8">
+        <h2 className="text-base font-medium text-cream-100 mb-3">Historique</h2>
         <History
           expenses={expenses}
           envelopes={envelopes}
@@ -207,17 +209,7 @@ export default function Home({ user, signOut, isDark, onToggleDark }) {
         />
       </section>
 
-      {/* Bouton flottant */}
-      <button
-        onClick={() => setExpenseModal({ open: true, expense: null, preselectEnvId: null })}
-        className="fixed bottom-5 right-5 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white text-3xl rounded-full shadow-lg active:scale-95 transition-transform z-40 flex items-center justify-center"
-        style={{ bottom: `calc(env(safe-area-inset-bottom, 0) + 1.25rem)` }}
-        aria-label="Ajouter une dépense"
-      >
-        +
-      </button>
-
-      {/* Modales */}
+      {/* Modals */}
       <ExpenseModal
         isOpen={expenseModal.open}
         onClose={() => setExpenseModal({ open: false, expense: null, preselectEnvId: null })}

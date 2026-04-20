@@ -1,68 +1,80 @@
 import { formatMoney, calculatePace } from '../lib/helpers';
+import { getIcon } from '../lib/icons';
+import { DEFAULT_ICON_MAP } from '../lib/constants';
 
 export default function EnvelopeCard({ envelope, spent, filterMonth, onClick }) {
   const remaining = envelope.budget - spent;
   const percent = envelope.budget > 0 ? (spent / envelope.budget) * 100 : 0;
-
-  const statusColor = percent > 100
-    ? 'text-red-600 dark:text-red-400'
-    : percent >= 80
-    ? 'text-amber-600 dark:text-amber-400'
-    : 'text-green-600 dark:text-green-400';
-
-  const barColor = percent > 100
-    ? 'bg-red-500'
-    : percent >= 80
-    ? 'bg-amber-500'
-    : 'bg-green-500';
-
   const pace = calculatePace(envelope.budget, spent, filterMonth);
 
-  const badgeLabel =
-    pace.status === 'ahead' ? 'En avance' :
-    pace.status === 'behind' ? 'En retard' :
-    pace.status === 'ontrack' ? 'OK' :
-    'Cible';
+  // Resolve icon: DB field > name mapping > fallback
+  const iconName = envelope.icon || DEFAULT_ICON_MAP[envelope.name] || 'wallet';
+  const envColor = envelope.color || '#8B95A7';
 
-  const badgeCls =
-    pace.status === 'ahead' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-    pace.status === 'behind' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-    pace.status === 'ontrack' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+  // Status config
+  const statusConfig =
+    pace.status === 'ahead' ? { label: 'En avance', color: '#7A9B7E' } :
+    pace.status === 'behind' ? { label: 'Dépassé', color: '#D89478' } :
+    pace.status === 'ontrack' ? { label: 'OK', color: '#8B95A7' } :
+    null;
+
+  // Bar color follows semantic
+  const barColor =
+    percent > 100 ? '#D89478' :
+    percent >= 80 ? '#D8976A' :
+    envColor;
 
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 cursor-pointer active:scale-[0.98] transition-transform"
+      className="bg-night-700 rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform border-gold"
     >
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-2 font-semibold text-sm text-slate-900 dark:text-slate-100">
-          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: envelope.color }} />
-          <span className="truncate">{envelope.name}</span>
+      <div className="flex items-center gap-3">
+        {/* Icon cube */}
+        <div
+          className="w-[38px] h-[38px] rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: `${envColor}26` }}
+        >
+          {getIcon(iconName, { color: envColor, size: 18 })}
         </div>
-        <div className={`font-bold text-sm ${statusColor}`}>{formatMoney(remaining)}</div>
-      </div>
 
-      {envelope.budget > 0 && (
-        <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-1.5">
+        {/* Middle: name + spent info */}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-cream-100 truncate">{envelope.name}</div>
+          <div className="text-[11px] text-secondary tabular-nums">
+            {formatMoney(spent)} de {formatMoney(envelope.budget)}
+          </div>
+        </div>
+
+        {/* Right: remaining + badge */}
+        <div className="text-right flex-shrink-0">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-            style={{ width: `${Math.min(percent, 100)}%` }}
-          />
+            className="font-display text-lg tabular-nums"
+            style={{ color: percent > 100 ? '#D89478' : '#F1F5F9' }}
+          >
+            {remaining >= 0 ? '' : ''}{formatMoney(remaining)}
+          </div>
+          {statusConfig && envelope.budget > 0 && (
+            <div
+              className="text-[10px] font-medium mt-0.5"
+              style={{ color: statusConfig.color }}
+            >
+              {statusConfig.label}
+            </div>
+          )}
         </div>
-      )}
-
-      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-        <span>{formatMoney(spent)} / {formatMoney(envelope.budget)}</span>
-        {envelope.budget > 0 && <span className={statusColor}>{percent.toFixed(0)}%</span>}
       </div>
 
+      {/* Progress bar */}
       {envelope.budget > 0 && (
-        <div className="mt-2 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{pace.text}</span>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${badgeCls}`}>
-            {badgeLabel}
-          </span>
+        <div className="mt-3 h-[3px] bg-night-600 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.min(percent, 100)}%`,
+              background: barColor,
+            }}
+          />
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { getIcon } from '../lib/icons';
 
 export default function ReceiptScanner({ onResult, envelopes }) {
   const [scanning, setScanning] = useState(false);
@@ -52,19 +53,23 @@ export default function ReceiptScanner({ onResult, envelopes }) {
         type="button"
         disabled={scanning}
         onClick={() => fileRef.current?.click()}
-        className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2 transition-opacity"
+        style={{ background: 'rgba(216, 151, 106, 0.15)', color: '#D8976A' }}
       >
         {scanning ? (
           <>
-            <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             Analyse en cours...
           </>
         ) : (
-          <>📸 Scanner un ticket</>
+          <>
+            {getIcon('camera', { size: 16, color: '#D8976A' })}
+            Scanner un ticket
+          </>
         )}
       </button>
       {error && (
-        <div className="mt-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+        <div className="mt-2 text-sm p-2.5 rounded-xl" style={{ color: '#D89478', background: 'rgba(216, 148, 120, 0.1)' }}>
           {error}
         </div>
       )}
@@ -77,7 +82,6 @@ function fileToBase64(file) {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result;
-      // Retirer le préfixe "data:image/...;base64,"
       const base64 = result.split(',')[1];
       resolve(base64);
     };

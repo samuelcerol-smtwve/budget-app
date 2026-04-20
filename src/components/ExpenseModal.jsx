@@ -3,6 +3,11 @@ import Modal from './Modal';
 import { nowDateTimeLocal, toLocalFromISO, toISOFromLocal } from '../lib/helpers';
 import ReceiptScanner from './ReceiptScanner';
 
+const inputCls = "w-full px-3 py-3 rounded-xl bg-night-800 text-cream-100 focus:outline-none transition-colors";
+const inputStyle = { border: '1px solid rgba(201, 169, 97, 0.12)' };
+const inputFocus = (e) => e.target.style.borderColor = 'rgba(201, 169, 97, 0.5)';
+const inputBlur = (e) => e.target.style.borderColor = 'rgba(201, 169, 97, 0.12)';
+
 export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId, envelopes, onSave, onDelete }) {
   const isEdit = !!expense;
 
@@ -14,7 +19,6 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
   );
   const [saving, setSaving] = useState(false);
 
-  // Réinitialise les champs quand la modal s'ouvre/change
   const resetToProps = () => {
     setAmount(expense ? String(expense.amount) : '');
     setEnvId(expense?.envelope_id || preselectEnvId || envelopes[0]?.id || '');
@@ -52,7 +56,6 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
             if (data.amount) setAmount(String(data.amount));
             if (data.note) setNote(data.note);
             if (data.date) {
-              // Utiliser la date du ticket avec l'heure actuelle
               const now = new Date();
               const hh = String(now.getHours()).padStart(2, '0');
               const mm = String(now.getMinutes()).padStart(2, '0');
@@ -63,7 +66,7 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
       )}
       <form onSubmit={submit} className="space-y-3">
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">Montant (€)</label>
+          <label className="text-[11px] font-medium text-secondary block mb-1">Montant (€)</label>
           <input
             type="number"
             step="0.01"
@@ -72,16 +75,22 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
             onChange={(e) => setAmount(e.target.value)}
             required
             autoFocus
-            className="w-full px-3 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xl font-semibold focus:outline-none focus:border-indigo-500"
+            className={`${inputCls} font-display text-xl`}
+            style={inputStyle}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">Catégorie</label>
+          <label className="text-[11px] font-medium text-secondary block mb-1">Catégorie</label>
           <select
             value={envId}
             onChange={(e) => setEnvId(e.target.value)}
             required
-            className="w-full px-3 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+            className={inputCls}
+            style={inputStyle}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
           >
             {envelopes.map((env) => (
               <option key={env.id} value={env.id}>{env.name}</option>
@@ -89,23 +98,29 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">Note (facultatif)</label>
+          <label className="text-[11px] font-medium text-secondary block mb-1">Note (facultatif)</label>
           <input
             type="text"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Ex: Courses Lidl"
-            className="w-full px-3 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+            className={inputCls}
+            style={inputStyle}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">Date et heure</label>
+          <label className="text-[11px] font-medium text-secondary block mb-1">Date et heure</label>
           <input
             type="datetime-local"
             value={dateLocal}
             onChange={(e) => setDateLocal(e.target.value)}
             required
-            className="w-full px-3 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+            className={inputCls}
+            style={inputStyle}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
           />
         </div>
 
@@ -114,7 +129,8 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
             <button
               type="button"
               onClick={() => onDelete(expense.id)}
-              className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+              className="flex-1 py-3 rounded-xl font-medium transition-opacity"
+              style={{ background: 'rgba(216, 148, 120, 0.15)', color: '#D89478' }}
             >
               Supprimer
             </button>
@@ -122,7 +138,7 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium disabled:opacity-50"
+            className="flex-1 py-3 bg-gold text-night-800 rounded-xl font-medium disabled:opacity-50 transition-opacity"
           >
             {saving ? '...' : 'Enregistrer'}
           </button>
@@ -132,7 +148,6 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
   );
 }
 
-// Petit hook inline pour reset le state quand la modal s'ouvre
 function useStateResetOnOpen(isOpen, cb) {
   useEffect(() => {
     if (isOpen) cb();

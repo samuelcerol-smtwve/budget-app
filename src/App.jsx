@@ -23,8 +23,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="text-slate-500 dark:text-slate-400">Chargement...</div>
+      <div className="min-h-screen flex items-center justify-center bg-night-800">
+        <div className="text-secondary">Chargement...</div>
       </div>
     );
   }

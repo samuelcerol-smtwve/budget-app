@@ -1,5 +1,6 @@
 import Modal from './Modal';
 import { todayISO } from '../lib/helpers';
+import { getIcon } from '../lib/icons';
 
 export default function SettingsModal({
   isOpen, onClose,
@@ -42,59 +43,70 @@ export default function SettingsModal({
     URL.revokeObjectURL(a.href);
   };
 
+  const btnSecondary = "w-full py-3 bg-night-800 text-cream-100 rounded-xl font-medium hover:bg-night-600 transition-colors border-gold";
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Réglages">
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2">Apparence</label>
-          <button
-            onClick={onToggleDark}
-            className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg font-medium"
-          >
-            {isDark ? '☀️ Mode clair' : '🌙 Mode sombre'}
+          <label className="text-[11px] font-medium text-secondary block mb-2">Apparence</label>
+          <button onClick={onToggleDark} className={btnSecondary}>
+            <span className="inline-flex items-center gap-2">
+              {isDark ? getIcon('sun', { size: 16 }) : getIcon('moon', { size: 16 })}
+              {isDark ? 'Mode clair' : 'Mode sombre'}
+            </span>
           </button>
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2">Exporter mes données</label>
+          <label className="text-[11px] font-medium text-secondary block mb-2">Exporter mes données</label>
           <div className="flex gap-2">
-            <button
-              onClick={exportJSON}
-              className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg font-medium"
-            >
-              JSON
+            <button onClick={exportJSON} className={`flex-1 ${btnSecondary}`}>
+              <span className="inline-flex items-center gap-1.5">
+                {getIcon('download', { size: 14 })} JSON
+              </span>
             </button>
-            <button
-              onClick={exportCSV}
-              className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg font-medium"
-            >
-              CSV
+            <button onClick={exportCSV} className={`flex-1 ${btnSecondary}`}>
+              <span className="inline-flex items-center gap-1.5">
+                {getIcon('download', { size: 14 })} CSV
+              </span>
             </button>
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-medium text-red-600 block mb-2">Zone dangereuse</label>
+          <label className="text-[11px] font-medium block mb-2" style={{ color: '#D89478' }}>Zone dangereuse</label>
           <button
             onClick={onResetMonth}
-            className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium mb-2"
+            className="w-full py-3 rounded-xl font-medium mb-2 transition-opacity"
+            style={{ background: 'rgba(216, 148, 120, 0.12)', color: '#D89478' }}
           >
-            🔄 Réinitialiser le mois affiché
+            <span className="inline-flex items-center gap-2">
+              {getIcon('refresh-cw', { size: 14, color: '#D89478' })}
+              Réinitialiser le mois affiché
+            </span>
           </button>
           <button
             onClick={onResetAll}
-            className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+            className="w-full py-3 rounded-xl font-medium transition-opacity"
+            style={{ background: 'rgba(216, 148, 120, 0.12)', color: '#D89478' }}
           >
-            🗑️ Tout effacer
+            <span className="inline-flex items-center gap-2">
+              {getIcon('trash', { size: 14, color: '#D89478' })}
+              Tout effacer
+            </span>
           </button>
         </div>
 
-        <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+        <div style={{ borderTop: '1px solid rgba(201, 169, 97, 0.12)', paddingTop: '16px' }}>
           <button
             onClick={onSignOut}
-            className="w-full py-3 text-slate-700 dark:text-slate-300 rounded-lg font-medium border border-slate-200 dark:border-slate-700"
+            className="w-full py-3 text-secondary rounded-xl font-medium border-gold hover:text-cream-100 transition-colors"
           >
-            Se déconnecter
+            <span className="inline-flex items-center gap-2">
+              {getIcon('log-out', { size: 14 })}
+              Se déconnecter
+            </span>
           </button>
         </div>
       </div>
