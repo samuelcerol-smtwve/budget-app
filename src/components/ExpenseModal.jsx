@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { nowDateTimeLocal, toLocalFromISO, toISOFromLocal } from '../lib/helpers';
+import ReceiptScanner from './ReceiptScanner';
 
 export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId, envelopes, onSave, onDelete }) {
   const isEdit = !!expense;
@@ -44,6 +45,22 @@ export default function ExpenseModal({ isOpen, onClose, expense, preselectEnvId,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEdit ? 'Modifier la dépense' : 'Nouvelle dépense'}>
+      {!isEdit && (
+        <ReceiptScanner
+          envelopes={envelopes}
+          onResult={(data) => {
+            if (data.amount) setAmount(String(data.amount));
+            if (data.note) setNote(data.note);
+            if (data.date) {
+              // Utiliser la date du ticket avec l'heure actuelle
+              const now = new Date();
+              const hh = String(now.getHours()).padStart(2, '0');
+              const mm = String(now.getMinutes()).padStart(2, '0');
+              setDateLocal(`${data.date}T${hh}:${mm}`);
+            }
+          }}
+        />
+      )}
       <form onSubmit={submit} className="space-y-3">
         <div>
           <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1">Montant (€)</label>
