@@ -77,6 +77,14 @@ export default function EnvelopeCard({ envelope, spent, filterMonth, onClick }) 
           />
         </div>
       )}
+
+      {/* Pace details */}
+      {envelope.budget > 0 && pace.status !== 'none' && (
+        <div className="mt-2.5 pt-2.5 text-[11px] text-secondary tabular-nums"
+          style={{ borderTop: '1px dashed rgba(201, 169, 97, 0.12)' }}>
+          {pace.text}
+        </div>
+      )}
     </div>
   );
 }
